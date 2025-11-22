@@ -1,0 +1,89 @@
+[project]
+name = "scrum-master"
+version = "0.1.0"
+description = "AI Scrum Master"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.16.5",
+    "asyncpg>=0.30.0",
+    "dishka>=1.7.2",
+    "fastapi>=0.118.0",
+    "google-adk>=1.15.1",
+    "google-cloud-speech>=2.33.0",
+    "google-cloud-storage>=2.0.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.9",
+    "pydantic-settings>=2.11.0",
+    "pydub>=0.25.1",
+    "pyjwt>=2.10.1",
+    "redis>=7.0.0",
+    "sqlalchemy[asyncio]>=2.0.43",
+    "uvicorn>=0.37.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.13.2",
+]
+
+[tool.ruff]
+src = ["scrum_master"]
+target-version = "py312"
+line-length = 110
+fix = true
+lint.select = [
+    # Pyflakes
+    "F",     # Pyflakes rules for logical errors
+
+    # pycodestyle
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+
+    # isort
+    "I",     # Import sorting and organization
+
+    # pep8-naming
+    "N",     # PEP 8 naming conventions
+
+    # pyupgrade
+    "UP",    # Modern Python syntax upgrades
+
+    # flake8-bugbear
+    "B",     # Common bugs and design problems
+
+    # flake8-simplify
+    "SIM",   # Code simplification suggestions
+
+    # flake8-comprehensions
+    "C4",    # List/dict/set comprehension improvements
+
+    # bandit (security)
+    "S",     # Security vulnerability detection
+
+    # flake8-annotations
+    "ANN",   # Type annotation enforcement
+
+    # flake8-async
+    "ASYNC", # Async/await usage best practices
+
+    # flake8-logging-format
+    "G",     # Logging format and best practices
+
+    # Pylint
+    "PL",    # Pylint rules for code quality
+
+    # Ruff-specific rules
+    "RUF",   # Ruff-specific improvements
+]
+lint.ignore = ["D203", "D213", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "D", "ANN204",]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["D", "E501"]
+"migrations/*.py" = ["ALL"]
