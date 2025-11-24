@@ -93,10 +93,12 @@ class GoogleMeetUIMethods:
             raise GoogleMeetUIException(f'Failed to navigate: {str(e)}')
 
     def disable_microphone_and_camera(self) -> None:
+        """Отключает микрофон и камеру перед входом"""
         logger.info('Disabling microphone and camera')
 
         time.sleep(2)
 
+        # Попытка отключить микрофон
         mic_selectors = [
             'div[aria-label="Turn off microphone"]',
             'button[aria-label="Turn off microphone"]',
@@ -104,17 +106,20 @@ class GoogleMeetUIMethods:
         ]
 
         for selector in mic_selectors:
-            try:
-                mic_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                self._safe_click(mic_button)
-                logger.info('Successfully disabled microphone')
-                time.sleep(0.5)
-                break
-            except (NoSuchElementException, WebDriverException):
-                continue
+            mic_button = self.find_element_by_selector(By.CSS_SELECTOR, selector)
+            if mic_button:
+                try:
+                    self._safe_click(mic_button)
+                    logger.info('Successfully disabled microphone')
+                    time.sleep(0.5)
+                    break
+                except Exception as e:
+                    logger.warning(f'Could not click microphone button: {e}')
+                    continue
         else:
             logger.warning('Microphone button not found or already disabled')
 
+        # Попытка отключить камеру
         camera_selectors = [
             'div[aria-label="Turn off camera"]',
             'button[aria-label="Turn off camera"]',
@@ -122,18 +127,21 @@ class GoogleMeetUIMethods:
         ]
 
         for selector in camera_selectors:
-            try:
-                camera_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                self._safe_click(camera_button)
-                logger.info('Successfully disabled camera')
-                time.sleep(0.5)
-                break
-            except (NoSuchElementException, WebDriverException):
-                continue
+            camera_button = self.find_element_by_selector(By.CSS_SELECTOR, selector)
+            if camera_button:
+                try:
+                    self._safe_click(camera_button)
+                    logger.info('Successfully disabled camera')
+                    time.sleep(0.5)
+                    break
+                except Exception as e:
+                    logger.warning(f'Could not click camera button: {e}')
+                    continue
         else:
             logger.warning('Camera button not found or already disabled')
 
     def enter_display_name(self, name: str) -> None:
+        """Вводит имя бота с множественными попытками"""
         logger.info(f'Entering display name: {name}')
 
         name_selectors = [
@@ -143,24 +151,31 @@ class GoogleMeetUIMethods:
             'input[type="text"]',
         ]
 
-        for attempt in range(5):
+        for attempt in range(30):
+            # Проверяем блокирующие элементы после каждой неудачной попытки
+            if attempt > 0:
+                self.handle_blocking_elements()
+
             for selector in name_selectors:
                 try:
-                    name_input = self.driver.find_element(By.CSS_SELECTOR, selector)
-                    if name_input.is_displayed() and name_input.is_enabled():
+                    name_input = self.find_element_by_selector(By.CSS_SELECTOR, selector)
+                    if name_input and name_input.is_displayed() and name_input.is_enabled():
                         name_input.clear()
                         name_input.send_keys(name)
-                        logger.info('Successfully entered display name')
+                        logger.info(f'Successfully entered display name on attempt {attempt + 1}')
                         time.sleep(0.5)
                         return
-                except (NoSuchElementException, WebDriverException):
+                except (ElementNotInteractableException, WebDriverException) as e:
+                    logger.debug(f'Name input not interactable: {e}')
                     continue
 
+            logger.debug(f'Name field not found or not interactable, attempt {attempt + 1}/30')
             time.sleep(1)
 
-        logger.warning('Could not enter display name - field not found or not interactable')
+        logger.warning('Could not enter display name after 30 attempts - field not found or not interactable')
 
     def click_join_button(self) -> None:
+        """Нажимает кнопку Join с множественными попытками"""
         logger.info('Clicking join button')
 
         time.sleep(2)
@@ -175,22 +190,27 @@ class GoogleMeetUIMethods:
             '//button[@aria-label*="Join"]',
         ]
 
-        for attempt in range(10):
+        for attempt in range(60):
+            # Проверяем блокирующие элементы после каждой неудачной попытки
+            if attempt > 0:
+                self.handle_blocking_elements()
+
             for selector in join_button_selectors:
                 try:
-                    button = self.driver.find_element(By.XPATH, selector)
-                    if button.is_displayed() and button.is_enabled():
+                    button = self.find_element_by_selector(By.XPATH, selector)
+                    if button and button.is_displayed() and button.is_enabled():
                         self._safe_click(button)
-                        logger.info('Successfully clicked join button')
+                        logger.info(f'Successfully clicked join button on attempt {attempt + 1}')
                         time.sleep(3)
                         return
-                except (NoSuchElementException, WebDriverException) as e:
+                except (ElementNotInteractableException, WebDriverException) as e:
+                    logger.debug(f'Join button not interactable: {e}')
                     continue
 
-            logger.info(f'Join button not found, attempt {attempt + 1}/10, waiting...')
-            time.sleep(2)
+            logger.debug(f'Join button not found or not clickable, attempt {attempt + 1}/60')
+            time.sleep(1)
 
-        raise GoogleMeetJoinTimeoutException('Could not find join button after 10 attempts')
+        raise GoogleMeetJoinTimeoutException('Could not find join button after 60 attempts')
 
     def _safe_click(self, element: Any) -> None:
         try:
@@ -235,28 +255,40 @@ class GoogleMeetUIMethods:
             return False
 
     def attempt_to_join_meeting(self, meet_url: str, bot_name: str) -> None:
+        """Полный процесс подключения к встрече"""
         try:
+            logger.info('Step 1: Navigating to meeting...')
             self.navigate_to_meeting(meet_url)
 
+            logger.info('Step 2: Checking if meeting exists...')
             if not self.check_if_meeting_exists():
                 raise GoogleMeetNotFoundException('Meeting not found or invalid')
 
             time.sleep(3)
 
-            logger.info('Disabling media inputs...')
+            logger.info('Step 3: Handling initial blocking elements...')
+            self.handle_blocking_elements()
+
+            logger.info('Step 4: Disabling media inputs...')
             self.disable_microphone_and_camera()
 
             time.sleep(1)
 
-            logger.info('Entering display name...')
+            logger.info('Step 5: Entering display name...')
             self.enter_display_name(bot_name)
 
             time.sleep(1)
 
-            logger.info('Clicking join button...')
+            logger.info('Step 6: Handling blocking elements before join...')
+            self.handle_blocking_elements()
+
+            logger.info('Step 7: Clicking join button...')
             self.click_join_button()
 
-            logger.info('Waiting for meeting to load...')
+            logger.info('Step 8: Handling blocking elements after join...')
+            self.handle_blocking_elements()
+
+            logger.info('Step 9: Waiting for meeting to load...')
             self.wait_for_meeting_to_load()
 
             logger.info('Successfully joined the meeting')
