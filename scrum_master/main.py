@@ -1,8 +1,8 @@
 import logging
 from pathlib import Path
-from scrum_master.utils.pydantic_fix import apply_monkeypatch
+from scrum_master.utils.pydantic_fix import matching_adk_pydantic
 try:
-    apply_monkeypatch()
+    matching_adk_pydantic()
 except Exception as e:
     logging.error(f"Failed to apply monkeypatch: {e}")
 

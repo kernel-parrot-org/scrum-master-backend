@@ -1,12 +1,7 @@
 from typing import Any
 from pydantic_core import core_schema
 
-def apply_monkeypatch():
-    """
-    Monkeypatches mcp.client.session.ClientSession, PIL.Image.Image, and the Pydantic schema generator
-    to be compatible with Pydantic v2.
-    """
-    # 1. Fix for mcp.client.session.ClientSession
+def matching_adk_pydantic():
     try:
         from mcp.client.session import ClientSession
         
@@ -23,7 +18,6 @@ def apply_monkeypatch():
     except ImportError:
         pass
 
-    # 2. Fix for PIL.Image.Image
     try:
         from PIL import Image
         
@@ -40,7 +34,6 @@ def apply_monkeypatch():
     except ImportError:
         pass
 
-    # 3. Catch-all fix for other types (like types.GenericAlias) that Pydantic v2 fails on
     try:
         from pydantic._internal import _generate_schema
         from pydantic.errors import PydanticSchemaGenerationError
@@ -51,7 +44,6 @@ def apply_monkeypatch():
             try:
                 return original_match_type(self, obj)
             except PydanticSchemaGenerationError:
-                # Fallback to Any schema for types that Pydantic can't handle
                 return core_schema.any_schema()
         
         _generate_schema.GenerateSchema.match_type = patched_match_type
