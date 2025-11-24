@@ -1,5 +1,7 @@
 import logging
 from pathlib import Path
+
+from pydantic import ConfigDict
 from scrum_master.utils.pydantic_fix import matching_adk_pydantic
 try:
     matching_adk_pydantic()
