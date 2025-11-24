@@ -5,19 +5,30 @@ import uvicorn
 from dishka.integrations import fastapi as fastapi_integration
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from google.adk.cli.fast_api import get_fast_api_app
 
 from scrum_master.ioc import create_container
 from scrum_master.modules.auth.presentation.api.auth.router import router as auth_router
+from scrum_master.modules.google_meet.presentation.api.meet.router import router as meet_router
+from scrum_master.agents.meet_agent.api.routes import router as meet_agent_router
+
+from mcp.shared.context import RequestContext
+from pydantic import ConfigDict
+
+RequestContext.model_config = ConfigDict(arbitrary_types_allowed=True)
+
 
 BASE_DIR = Path(__file__).resolve().parent
 
 logger = logging.getLogger(__name__)
 
-container = create_container()
 
 def create_app() -> FastAPI:
+    container = create_container()
+
     app = FastAPI(
-        title='Scrum Master API',
+        agents_dir=str(BASE_DIR / 'agents'),
+        web=True,
     )
 
     app.add_middleware(
@@ -31,6 +42,8 @@ def create_app() -> FastAPI:
     fastapi_integration.setup_dishka(container, app)
 
     app.include_router(auth_router)
+    app.include_router(meet_router)
+    # app.include_router(meet_agent_router)
 
     return app
 

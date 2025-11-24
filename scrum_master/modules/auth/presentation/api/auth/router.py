@@ -11,16 +11,13 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from scrum_master.modules.auth.application.dtos import LogoutDTO, OAuthCallbackDTO, RefreshTokenDTO
-from scrum_master.modules.auth.application.interactors.get_github_token import GetGitHubTokenInteractor
 from scrum_master.modules.auth.application.interactors.get_user import GetUserInteractor
-from scrum_master.modules.auth.application.interactors.github_oauth_login import GitHubOAuthLoginInteractor
 from scrum_master.modules.auth.application.interactors.google_oauth_login import GoogleOAuthLoginInteractor
 from scrum_master.modules.auth.application.interactors.logout import LogoutInteractor
 from scrum_master.modules.auth.application.interactors.refresh_token import RefreshTokenInteractor
-from scrum_master.modules.auth.infrastructure.oauth.github_oauth_provider import GithubOauthProvider
 from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import GoogleOAuthProvider
 from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService
-from scrum_master.modules.auth.presentation.api.auth.schemas import GitHubTokenResponse, UserResponse
+from scrum_master.modules.auth.presentation.api.auth.schemas import UserResponse
 from scrum_master.shared.config import get_settings
 
 logger = logging.getLogger(__name__)

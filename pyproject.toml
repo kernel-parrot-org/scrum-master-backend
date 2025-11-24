@@ -5,25 +5,31 @@ description = "AI Scrum Master"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiogram>=3.22.0",
     "alembic>=1.16.5",
     "asyncpg>=0.30.0",
     "dishka>=1.7.2",
     "fastapi>=0.118.0",
-    "google-adk>=1.15.1",
+    "google-adk<=1.15.1",
     "google-cloud-speech>=2.33.0",
     "google-cloud-storage>=2.0.0",
     "httpx>=0.28.1",
+    "notion-client>=2.7.0",
     "pydantic>=2.11.9",
     "pydantic-settings>=2.11.0",
     "pydub>=0.25.1",
     "pyjwt>=2.10.1",
     "redis>=7.0.0",
+    "reportlab>=4.4.5",
+    "selenium>=4.27.0",
     "sqlalchemy[asyncio]>=2.0.43",
     "uvicorn>=0.37.0",
+    "webdriver-manager>=4.0.2",
 ]
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.4.0",
     "ruff>=0.13.2",
 ]
 

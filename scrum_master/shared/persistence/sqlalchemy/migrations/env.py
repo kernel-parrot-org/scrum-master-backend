@@ -7,6 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from scrum_master.modules.auth.domain.entities import Base
+from scrum_master.modules.google_meet.domain.entities import Meeting  # noqa: F401
 from scrum_master.shared.config import get_settings
 
 settings = get_settings()

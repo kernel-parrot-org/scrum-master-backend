@@ -2,7 +2,7 @@ import io
 import logging
 from datetime import datetime
 
-from core.config import settings
+from scrum_master.agents.meet_agent.core.config import settings
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -10,7 +10,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-from services.telegram_service import TelegramService
+from scrum_master.agents.meet_agent.services.telegram_service import TelegramService
 
 logger = logging.getLogger(__name__)
 
