@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from scrum_master.ioc import create_container
 from scrum_master.modules.auth.presentation.api.auth.router import router as auth_router
+from scrum_master.modules.jira.router import router as jira_router
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
     fastapi_integration.setup_dishka(container, app)
 
     app.include_router(auth_router)
+    app.include_router(jira_router)
 
     return app
 

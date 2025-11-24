@@ -1,6 +1,12 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+class JiraConfig(BaseSettings):
+    url: str
+    user: str
+    token: str
+    project: str
+
 
 class PostgresConfig(BaseSettings):
     model_config = SettingsConfigDict(
