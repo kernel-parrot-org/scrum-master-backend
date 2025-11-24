@@ -19,6 +19,8 @@ class GoogleConfig(BaseSettings):
     api_key: SecretStr = SecretStr('')
     application_credentials: str = ''
     gcs_bucket_name: str = ''
+    project: str = ''
+    location: str = 'us-central1'
 
 
 class AudioConfig(BaseSettings):
