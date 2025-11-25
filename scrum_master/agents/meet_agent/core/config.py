@@ -49,11 +49,14 @@ class NotionConfig(BaseSettings):
     page_id: str = ''
 
 
+from scrum_master.shared.config.base import JiraConfig
+
 class Settings(BaseSettings):
     telegram: TelegramConfig = TelegramConfig()
     google: GoogleConfig = GoogleConfig()
     audio: AudioConfig = AudioConfig()
     notion: NotionConfig = NotionConfig()
+    jira: JiraConfig = JiraConfig()
 
     model_config = SettingsConfigDict(
         env_file_encoding='utf-8',

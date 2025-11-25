@@ -26,9 +26,13 @@ class CreateIssueRequest(BaseModel):
     description: Optional[str] = None
     assignee: Optional[str] = None
     issue_type: str = "Task"
+    priority: Optional[str] = None
+    duedate: Optional[str] = None
 
 class UpdateIssueRequest(BaseModel):
     summary: Optional[str] = None
     description: Optional[str] = None
     assignee: Optional[str] = None
+    priority: Optional[str] = None
+    duedate: Optional[str] = None
 

@@ -43,8 +43,13 @@ class FileService:
 
         os.makedirs(self.upload_dir, exist_ok=True)
 
-        self.gcs_client = storage.Client()
-        self.gcs_bucket = self.gcs_client.bucket(gcs_bucket_name)
+        if gcs_bucket_name:
+            self.gcs_client = storage.Client()
+            self.gcs_bucket = self.gcs_client.bucket(gcs_bucket_name)
+        else:
+            self.gcs_client = None
+            self.gcs_bucket = None
+            logger.warning('[FileService] GCS bucket name not configured, GCS uploads will be disabled')
 
     async def save_audio_file(self, file: UploadFile) -> tuple[str, str, str]:
         ext = Path(file.filename).suffix.lower()
@@ -74,6 +79,10 @@ class FileService:
         return meeting_id, processed_path, gcs_uri
 
     async def _upload_to_gcs(self, file_path: str) -> str:
+        if not self.gcs_bucket:
+            logger.warning('[FileService] GCS not configured, skipping upload')
+            return ''
+
         try:
             filename = os.path.basename(file_path)
             blob = self.gcs_bucket.blob(filename)
@@ -131,14 +140,15 @@ class FileService:
         except (HTTPException, FileNotFoundError):
             pass
 
-        try:
-            blobs = list(
-                self.gcs_client.list_blobs(self.gcs_bucket_name, prefix=meeting_id)
-            )
-            for blob in blobs:
-                blob.delete()
-                deleted = True
-        except Exception as e:
-            logger.error(f'[FileService] Failed to delete from GCS: {e}')
+        if self.gcs_client and self.gcs_bucket_name:
+            try:
+                blobs = list(
+                    self.gcs_client.list_blobs(self.gcs_bucket_name, prefix=meeting_id)
+                )
+                for blob in blobs:
+                    blob.delete()
+                    deleted = True
+            except Exception as e:
+                logger.error(f'[FileService] Failed to delete from GCS: {e}')
 
         return deleted

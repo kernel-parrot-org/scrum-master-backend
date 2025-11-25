@@ -22,11 +22,18 @@ async def upload_audio(
     try:
         meeting_id, local_path, gcs_uri = await file_service.save_audio_file(file)
 
+        audio_path = gcs_uri if gcs_uri else local_path
+        message = (
+            f'File uploaded to GCS. Use this URI with agent: {gcs_uri}'
+            if gcs_uri
+            else f'File saved locally. Use this path with agent: {local_path}'
+        )
+
         return UploadResponse(
             status='success',
             meeting_id=meeting_id,
-            audio_path=gcs_uri,
-            message=f'File uploaded to GCS. Use this URI with agent: {gcs_uri}',
+            audio_path=audio_path,
+            message=message,
         )
     except HTTPException:
         raise

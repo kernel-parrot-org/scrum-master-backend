@@ -1,5 +1,4 @@
-#!/bin/bash
-# Reset PostgreSQL database volume
+
 echo "Stopping containers..."
 docker-compose down
 

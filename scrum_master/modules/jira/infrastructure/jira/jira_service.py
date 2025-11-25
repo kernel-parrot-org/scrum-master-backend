@@ -34,6 +34,12 @@ class JiraService:
         if dto.assignee:
             payload["fields"]["assignee"] = {"name": dto.assignee}
 
+        if dto.priority:
+            payload["fields"]["priority"] = {"name": dto.priority}
+
+        if dto.duedate:
+            payload["fields"]["duedate"] = dto.duedate
+
         return await self.api.create_issue(payload)
 
     async def update_issue(self, issue_key: str, dto: UpdateIssueRequest):
@@ -41,6 +47,8 @@ class JiraService:
         if dto.summary: fields["summary"] = dto.summary
         if dto.description: fields["description"] = dto.description
         if dto.assignee: fields["assignee"] = {"name": dto.assignee}
+        if dto.priority: fields["priority"] = {"name": dto.priority}
+        if dto.duedate: fields["duedate"] = dto.duedate
         return await self.api.update_issue(issue_key, fields)
 
     async def delete_issue(self, issue_key: str):
