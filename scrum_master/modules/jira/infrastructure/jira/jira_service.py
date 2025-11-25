@@ -1,10 +1,13 @@
-from scrum_master.modules.jira.infrastructure.jira.api import JiraAPI
+from scrum_master.modules.jira.infrastructure.jira.jira_client import JiraClient
 
-from .models import CreateIssueRequest, UpdateIssueRequest
+from scrum_master.modules.jira.presentation.api.jira.schemas import (
+    CreateIssueRequest,
+    UpdateIssueRequest
+)
 
 
 class JiraService:
-    def __init__(self, api: JiraAPI):
+    def __init__(self, api: JiraClient):
         self.api = api
 
     async def get_users(self):
