@@ -20,16 +20,10 @@ class DisconnectFromMeetingRequest(BaseModel):
 
 
 class MeetingResponse(BaseModel):
-    id: UUID
-    user_id: UUID
     meet_url: str
-    status: MeetingStatus
-    bot_name: str | None
-    error_message: str | None
-    connected_at: datetime | None
-    disconnected_at: datetime | None
-    created_at: datetime
-    updated_at: datetime
+    status: str
+    bot_name: str
+    message: str
 
     class Config:
         from_attributes = True

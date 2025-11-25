@@ -4,9 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from scrum_master.modules.google_meet.application.dtos import (
     ConnectToMeetingRequest, MeetingResponse)
-from scrum_master.modules.google_meet.application.interfaces import (
-    IGoogleMeetAdapter, IMeetingRepository)
-from scrum_master.modules.google_meet.domain.entities import MeetingStatus
+from scrum_master.modules.google_meet.application.interfaces import IGoogleMeetAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +12,8 @@ logger = logging.getLogger(__name__)
 class ConnectToMeetInteractor:
     def __init__(
         self,
-        meeting_repository: IMeetingRepository,
         google_meet_adapter: IGoogleMeetAdapter,
     ):
-        self.meeting_repository = meeting_repository
         self.google_meet_adapter = google_meet_adapter
         self.executor = ThreadPoolExecutor(max_workers=1)
 
@@ -57,26 +53,20 @@ class ConnectToMeetInteractor:
                 request.presigned_url_audio,
             )
 
-            # Return success immediately (bot runs in background)
-            import uuid
-            from datetime import datetime, timezone
-
-            meeting_id = str(uuid.uuid4())
-            logger.info(f'Bot started successfully for meeting: {meeting_id}')
+            logger.info('Bot started successfully in background')
 
             return MeetingResponse(
-                id=meeting_id,
-                user_id=request.user_id,
                 meet_url=request.meet_url,
-                status=MeetingStatus.CONNECTED,
+                status="connecting",
                 bot_name=request.bot_name or "Google Bot",
-                error_message=None,
-                connected_at=datetime.now(timezone.utc),
-                disconnected_at=None,
-                created_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc),
+                message="Bot is connecting to the meeting in background",
             )
 
         except Exception as e:
             logger.error(f'Failed to start bot: {e}', exc_info=True)
-            raise
+            return MeetingResponse(
+                meet_url=request.meet_url,
+                status="failed",
+                bot_name=request.bot_name or "Google Bot",
+                message=f"Failed to start bot: {str(e)}",
+            )

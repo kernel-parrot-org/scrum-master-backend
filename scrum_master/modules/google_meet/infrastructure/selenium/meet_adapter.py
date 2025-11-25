@@ -1,7 +1,5 @@
-"""Google Meet adapter - Simplified."""
 import logging
 import threading
-from typing import Any
 
 from scrum_master.modules.google_meet.application.interfaces import \
     IGoogleMeetAdapter
@@ -11,7 +9,6 @@ from .meet_bot import GoogleMeetUIException, JoinGoogleMeet
 
 
 class GoogleMeetAdapter(IGoogleMeetAdapter):
-    """Adapter for Google Meet bot."""
 
     def __init__(self, config: GoogleMeetConfig):
         self.config = config
@@ -20,7 +17,6 @@ class GoogleMeetAdapter(IGoogleMeetAdapter):
         self.bot_thread: threading.Thread | None = None
 
     def initialize_driver(self) -> None:
-        """Initialize driver (no-op)."""
         pass
 
     def connect_to_meeting(
@@ -32,7 +28,6 @@ class GoogleMeetAdapter(IGoogleMeetAdapter):
         presigned_url_combined: str | None = None,
         presigned_url_audio: str | None = None,
     ) -> None:
-        """Connect to meeting in background thread."""
         try:
             bot_display_name = bot_name or self.config.bot_name
             record_time = min_record_time or 3600
@@ -61,7 +56,6 @@ class GoogleMeetAdapter(IGoogleMeetAdapter):
             raise GoogleMeetUIException(f"Connection error: {e}")
 
     def _run_bot(self):
-        """Run bot in background."""
         try:
             if self.bot:
                 self.bot.run()
@@ -69,7 +63,6 @@ class GoogleMeetAdapter(IGoogleMeetAdapter):
             self.logger.error(f"Bot execution error: {e}", exc_info=True)
 
     def disconnect_from_meeting(self) -> None:
-        """Disconnect from meeting."""
         if self.bot:
             try:
                 self.logger.info("Disconnecting...")
@@ -81,5 +74,4 @@ class GoogleMeetAdapter(IGoogleMeetAdapter):
                 self.logger.error(f"Disconnect error: {e}")
 
     def cleanup(self) -> None:
-        """Cleanup resources."""
         self.disconnect_from_meeting()

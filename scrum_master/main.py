@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from modules.auth.infrastructure.logging import configure_logging
+from scrum_master.modules.auth.infrastructure.logging import configure_logging
 from pydantic import ConfigDict
 
 from scrum_master.utils.pydantic_fix import matching_adk_pydantic

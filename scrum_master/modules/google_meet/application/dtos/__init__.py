@@ -7,7 +7,6 @@ from scrum_master.modules.google_meet.domain.entities import MeetingStatus
 
 @dataclass(slots=True)
 class ConnectToMeetingRequest:
-    user_id: UUID
     meet_url: str
     bot_name: str | None = None
     min_record_time: int | None = None
@@ -18,16 +17,10 @@ class ConnectToMeetingRequest:
 
 @dataclass(slots=True)
 class MeetingResponse:
-    id: UUID
-    user_id: UUID
     meet_url: str
-    status: MeetingStatus
-    bot_name: str | None
-    error_message: str | None
-    connected_at: datetime | None
-    disconnected_at: datetime | None
-    created_at: datetime
-    updated_at: datetime
+    status: str
+    bot_name: str
+    message: str
 
 
 @dataclass(slots=True)

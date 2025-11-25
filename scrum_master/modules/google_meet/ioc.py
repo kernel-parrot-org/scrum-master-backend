@@ -39,11 +39,9 @@ class GoogleMeetModuleProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_connect_to_meet_interactor(
         self,
-        meeting_repo: IMeetingRepository,
         google_meet_adapter: IGoogleMeetAdapter,
     ) -> ConnectToMeetInteractor:
         return ConnectToMeetInteractor(
-            meeting_repository=meeting_repo,
             google_meet_adapter=google_meet_adapter,
         )
 
