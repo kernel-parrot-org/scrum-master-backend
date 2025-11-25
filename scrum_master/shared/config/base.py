@@ -68,7 +68,7 @@ class GCSConfig(BaseSettings):
     )
 
     bucket_name: str = ''
-    credentials_path: str = ''
+    application_credentials: str = ''
     project_id: str = ''
 
 class TelegramConfig(BaseSettings):

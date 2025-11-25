@@ -37,8 +37,17 @@ class JiraService:
         if dto.priority:
             payload["fields"]["priority"] = {"name": dto.priority}
 
-        if dto.duedate:
-            payload["fields"]["duedate"] = dto.duedate
+        # Commented out - not configured in Jira project
+        # if dto.duedate:
+        #     payload["fields"]["duedate"] = dto.duedate
+
+        # Handle subtasks - add parent link
+        if dto.parent_key:
+            payload["fields"]["parent"] = {"key": dto.parent_key}
+
+        # Handle epics - add epic name (REQUIRED for Epic type)
+        if dto.epic_name and dto.issue_type == "Epic":
+            payload["fields"]["customfield_10105"] = dto.epic_name
 
         return await self.api.create_issue(payload)
 

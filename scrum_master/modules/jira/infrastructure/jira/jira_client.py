@@ -39,12 +39,20 @@ class JiraClient:
         return r.json().get("issues", [])
 
     async def create_issue(self, payload: dict) -> dict:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[JIRA CLIENT] Creating issue with payload: {payload}")
+        
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 f"{self.url}/rest/api/2/issue",
                 json=payload,
                 headers=self.headers
             )
+        
+        if r.status_code != 201:
+            logger.error(f"[JIRA CLIENT] Failed to create issue. Status: {r.status_code}, Response: {r.text}")
+        
         r.raise_for_status()
         return r.json()
 

@@ -2,6 +2,7 @@ import logging
 import os
 import uuid
 from pathlib import Path
+from typing import Set, Tuple
 
 import aiofiles
 from fastapi import HTTPException, UploadFile, status
@@ -33,7 +34,7 @@ class FileService:
         self,
         upload_dir: str,
         max_upload_size: int,
-        allowed_extensions: set[str],
+        allowed_extensions: Set[str],
         gcs_bucket_name: str,
     ):
         self.upload_dir = upload_dir
@@ -49,9 +50,9 @@ class FileService:
         else:
             self.gcs_client = None
             self.gcs_bucket = None
-            logger.warning('[FileService] GCS bucket name not configured, GCS uploads will be disabled')
+            logger.warning("GCS bucket name not provided, GCS features disabled")
 
-    async def save_audio_file(self, file: UploadFile) -> tuple[str, str, str]:
+    async def save_audio_file(self, file: UploadFile) -> Tuple[str, str, str]:
         ext = Path(file.filename).suffix.lower()
         if ext not in self.allowed_extensions:
             raise HTTPException(
@@ -80,8 +81,8 @@ class FileService:
 
     async def _upload_to_gcs(self, file_path: str) -> str:
         if not self.gcs_bucket:
-            logger.warning('[FileService] GCS not configured, skipping upload')
-            return ''
+            logger.warning("[FileService] GCS not configured, skipping upload")
+            return ""
 
         try:
             filename = os.path.basename(file_path)
@@ -96,7 +97,7 @@ class FileService:
             logger.error(f'[FileService] GCS upload failed: {e}')
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Failed to upload to GCS: {e!s}',
+                detail=f'Failed to upload to GCS: {str(e)}',
             )
 
     def get_gcs_uri(self, meeting_id: str) -> str:
