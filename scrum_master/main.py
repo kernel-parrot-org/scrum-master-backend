@@ -2,6 +2,8 @@ import logging
 from pathlib import Path
 
 from pydantic import ConfigDict
+
+from modules.auth.infrastructure.logging import configure_logging
 from scrum_master.utils.pydantic_fix import matching_adk_pydantic
 try:
     matching_adk_pydantic()
@@ -15,7 +17,6 @@ import uvicorn
 from dishka.integrations import fastapi as fastapi_integration
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from google.adk.cli.fast_api import get_fast_api_app
 
 from scrum_master.ioc import create_container
 from scrum_master.modules.auth.presentation.api.auth.router import router as auth_router
@@ -26,7 +27,7 @@ from google.adk.cli.fast_api import get_fast_api_app
 
 BASE_DIR = Path(__file__).resolve().parent
 
-logger = logging.getLogger(__name__)
+configure_logging()
 
 
 def create_app() -> FastAPI:

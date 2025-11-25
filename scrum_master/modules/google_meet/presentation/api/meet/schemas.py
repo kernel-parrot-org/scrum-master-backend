@@ -9,6 +9,10 @@ from scrum_master.modules.google_meet.domain.entities import MeetingStatus
 class ConnectToMeetingRequest(BaseModel):
     meet_url: str = Field(..., description='Google Meet URL', min_length=1)
     bot_name: str | None = Field(None, description='Bot display name in the meeting')
+    min_record_time: int | None = Field(None, description='Minimum recording time in seconds', ge=60)
+    max_waiting_time: int | None = Field(None, description='Maximum waiting time before joining in seconds', ge=60)
+    presigned_url_combined: str | None = Field(None, description='Pre-signed URL for combined file upload')
+    presigned_url_audio: str | None = Field(None, description='Pre-signed URL for audio file upload')
 
 
 class DisconnectFromMeetingRequest(BaseModel):
