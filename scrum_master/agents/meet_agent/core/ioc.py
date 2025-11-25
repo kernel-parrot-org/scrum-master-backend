@@ -1,6 +1,6 @@
 from dishka import Provider, Scope, from_context, provide
 
-from scrum_master.agents.meet_agent.core.config import Settings
+from scrum_master.shared.config import Settings
 from scrum_master.agents.meet_agent.services.file_service import FileService
 from scrum_master.agents.meet_agent.services.telegram_service import \
     TelegramService
@@ -22,5 +22,5 @@ class AppProvider(Provider):
             upload_dir=config.audio.upload_dir,
             max_upload_size=config.audio.max_upload_size,
             allowed_extensions=config.audio.allowed_extensions,
-            gcs_bucket_name=config.google.gcs_bucket_name,
+            gcs_bucket_name=config.gcs.bucket_name,
         )

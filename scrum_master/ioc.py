@@ -1,5 +1,6 @@
 from dishka import AsyncContainer, make_async_container
 
+from scrum_master.agents.meet_agent.core.ioc import AppProvider
 from scrum_master.modules.auth.ioc import AuthModuleProvider
 from scrum_master.modules.jira.ioc import JiraProvider
 from scrum_master.shared.config import Settings, get_settings
@@ -13,6 +14,7 @@ def create_container() -> AsyncContainer:
         SharedInfrastructureProvider(),
         AuthModuleProvider(),
         JiraProvider(),
+        AppProvider(),
         context={Settings: settings}
     )
 
