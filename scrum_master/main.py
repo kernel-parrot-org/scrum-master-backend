@@ -5,7 +5,7 @@ from scrum_master.utils.pydantic_fix import matching_adk_pydantic
 try:
     matching_adk_pydantic()
 except Exception as e:
-    logging.error(f"Failed to apply monkeypatch: {e}")
+    logging.error(f"Failed to apply matching_adk_pydantic: {e}")
 
 from mcp.shared.context import RequestContext
 RequestContext.__pydantic_config__ = ConfigDict(arbitrary_types_allowed=True)
@@ -18,10 +18,11 @@ from google.adk.cli.fast_api import get_fast_api_app
 
 from scrum_master.ioc import create_container
 from scrum_master.modules.auth.presentation.api.auth.router import router as auth_router
+
 from scrum_master.modules.google_meet.presentation.api.meet.router import router as meet_router
 from scrum_master.agents.meet_agent.api.routes import router as meet_agent_router
 from google.adk.cli.fast_api import get_fast_api_app
-
+from scrum_master.modules.jira.router import router as jira_router
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -46,8 +47,11 @@ def create_app() -> FastAPI:
 
     fastapi_integration.setup_dishka(container, app)
     app.include_router(auth_router)
+
     app.include_router(meet_router)
     app.include_router(meet_agent_router)
+    app.include_router(jira_router)
+
 
     return app
 
