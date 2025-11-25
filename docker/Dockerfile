@@ -1,13 +1,18 @@
 FROM python:3.12-slim
 
-# Install Google Chrome
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
-
+# Install prerequisites for Chrome setup
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Google Chrome
+RUN mkdir -p /etc/apt/keyrings && \
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg && \
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+
+RUN apt-get update && apt-get install -y \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
