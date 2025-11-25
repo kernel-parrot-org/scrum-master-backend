@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from scrum_master.modules.auth.domain.entities import OAuthConnection, OAuthProvider, SessionData, User
+from scrum_master.modules.auth.domain.entities import (OAuthConnection,
+                                                       OAuthProvider,
+                                                       SessionData, User)
 
 
 class IUserRepository(ABC):

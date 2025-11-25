@@ -2,27 +2,34 @@ from dishka import Provider, Scope, provide
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scrum_master.modules.auth.application.interactors.get_github_token import GetGitHubTokenInteractor
-from scrum_master.modules.auth.application.interactors.get_user import GetUserInteractor
-from scrum_master.modules.auth.application.interactors.github_oauth_login import GitHubOAuthLoginInteractor
-from scrum_master.modules.auth.application.interactors.google_oauth_login import GoogleOAuthLoginInteractor
-from scrum_master.modules.auth.application.interactors.logout import LogoutInteractor
-from scrum_master.modules.auth.application.interactors.refresh_token import RefreshTokenInteractor
+from scrum_master.modules.auth.application.interactors.get_github_token import \
+    GetGitHubTokenInteractor
+from scrum_master.modules.auth.application.interactors.get_user import \
+    GetUserInteractor
+from scrum_master.modules.auth.application.interactors.github_oauth_login import \
+    GitHubOAuthLoginInteractor
+from scrum_master.modules.auth.application.interactors.google_oauth_login import \
+    GoogleOAuthLoginInteractor
+from scrum_master.modules.auth.application.interactors.logout import \
+    LogoutInteractor
+from scrum_master.modules.auth.application.interactors.refresh_token import \
+    RefreshTokenInteractor
 from scrum_master.modules.auth.application.interfaces import (
-    IOAuthConnectionRepository,
-    ISessionRepository,
-    IUserRepository,
-)
+    IOAuthConnectionRepository, ISessionRepository, IUserRepository)
 from scrum_master.modules.auth.config import AuthModuleConfig
-from scrum_master.modules.auth.infrastructure.oauth.github_oauth_provider import GithubOauthProvider
-from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import GoogleOAuthProvider
-from scrum_master.modules.auth.infrastructure.redis.session_repository import RedisSessionRepository
-from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService as AuthJWTService
+from scrum_master.modules.auth.infrastructure.oauth.github_oauth_provider import \
+    GithubOauthProvider
+from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import \
+    GoogleOAuthProvider
+from scrum_master.modules.auth.infrastructure.redis.session_repository import \
+    RedisSessionRepository
+from scrum_master.modules.auth.infrastructure.repositories.oauth_connection_repository import \
+    SQLAlchemyOAuthConnectionRepository
+from scrum_master.modules.auth.infrastructure.repositories.user_repository import \
+    SQLAlchemyUserRepository
+from scrum_master.modules.auth.infrastructure.security.jwt_service import \
+    JWTService as AuthJWTService
 from scrum_master.shared.config import Settings
-from scrum_master.modules.auth.infrastructure.repositories.oauth_connection_repository import (
-    SQLAlchemyOAuthConnectionRepository,
-)
-from scrum_master.modules.auth.infrastructure.repositories.user_repository import SQLAlchemyUserRepository
 
 
 class AuthModuleProvider(Provider):

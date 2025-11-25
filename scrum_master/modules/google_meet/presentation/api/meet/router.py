@@ -6,26 +6,21 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService
-from scrum_master.modules.google_meet.application.dtos import (
-    ConnectToMeetingRequest as ConnectRequest,
-    DisconnectFromMeetingRequest as DisconnectRequest,
-)
-from scrum_master.modules.google_meet.application.interactors.connect_to_meet import (
-    ConnectToMeetInteractor,
-)
-from scrum_master.modules.google_meet.application.interactors.disconnect_from_meet import (
-    DisconnectFromMeetInteractor,
-)
-from scrum_master.modules.google_meet.application.interactors.get_meetings import (
-    GetMeetingsInteractor,
-)
+from scrum_master.modules.auth.infrastructure.security.jwt_service import \
+    JWTService
+from scrum_master.modules.google_meet.application.dtos import \
+    ConnectToMeetingRequest as ConnectRequest
+from scrum_master.modules.google_meet.application.dtos import \
+    DisconnectFromMeetingRequest as DisconnectRequest
+from scrum_master.modules.google_meet.application.interactors.connect_to_meet import \
+    ConnectToMeetInteractor
+from scrum_master.modules.google_meet.application.interactors.disconnect_from_meet import \
+    DisconnectFromMeetInteractor
+from scrum_master.modules.google_meet.application.interactors.get_meetings import \
+    GetMeetingsInteractor
 from scrum_master.modules.google_meet.presentation.api.meet.schemas import (
-    ConnectToMeetingRequest,
-    DisconnectFromMeetingRequest,
-    MeetingListResponse,
-    MeetingResponse,
-)
+    ConnectToMeetingRequest, DisconnectFromMeetingRequest, MeetingListResponse,
+    MeetingResponse)
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +41,13 @@ async def connect_to_meeting(
         # payload = jwt_service.verify_access_token(token)
 
         dto = ConnectRequest(
-            user_id="71001846-78c0-472f-bab8-fd62aa9395f3",
+            user_id="8de94579-b359-4ef9-af50-fefd435454fe",
             meet_url=request.meet_url,
             bot_name=request.bot_name,
+            min_record_time=request.min_record_time,
+            max_waiting_time=request.max_waiting_time,
+            presigned_url_combined=request.presigned_url_combined,
+            presigned_url_audio=request.presigned_url_audio,
         )
 
         result = await interactor.execute(dto)
@@ -98,7 +97,7 @@ async def disconnect_from_meeting(
 
         dto = DisconnectRequest(
             meeting_id=request.meeting_id,
-            user_id="71001846-78c0-472f-bab8-fd62aa9395f3",
+            user_id="8de94579-b359-4ef9-af50-fefd435454fe",
         )
 
         result = await interactor.execute(dto)
@@ -141,7 +140,7 @@ async def get_meetings(
         token = credentials.credentials
         payload = jwt_service.verify_access_token(token)
 
-        meetings = await interactor.execute("71001846-78c0-472f-bab8-fd62aa9395f3")
+        meetings = await interactor.execute("8de94579-b359-4ef9-af50-fefd435454fe")
 
         return MeetingListResponse(
             meetings=[

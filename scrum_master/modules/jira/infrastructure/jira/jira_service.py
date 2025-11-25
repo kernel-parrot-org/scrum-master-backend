@@ -1,4 +1,5 @@
 from scrum_master.modules.jira.infrastructure.jira.api import JiraAPI
+
 from .models import CreateIssueRequest, UpdateIssueRequest
 
 

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from scrum_master.modules.auth.presentation.api.auth.schemas import OAuthUserInfo
+from scrum_master.modules.auth.presentation.api.auth.schemas import \
+    OAuthUserInfo
 
 
 class BaseOAuthProvider(ABC):

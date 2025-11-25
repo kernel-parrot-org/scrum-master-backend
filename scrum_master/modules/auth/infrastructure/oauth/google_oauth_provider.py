@@ -3,8 +3,10 @@ from urllib.parse import urlencode
 
 import httpx
 
-from scrum_master.modules.auth.infrastructure.oauth.base_oauth_provider import BaseOAuthProvider
-from scrum_master.modules.auth.presentation.api.auth.schemas import OAuthUserInfo
+from scrum_master.modules.auth.infrastructure.oauth.base_oauth_provider import \
+    BaseOAuthProvider
+from scrum_master.modules.auth.presentation.api.auth.schemas import \
+    OAuthUserInfo
 
 logger = logging.getLogger(__name__)
 

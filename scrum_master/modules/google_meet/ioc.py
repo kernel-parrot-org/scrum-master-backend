@@ -1,26 +1,20 @@
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scrum_master.modules.google_meet.application.interactors.connect_to_meet import (
-    ConnectToMeetInteractor,
-)
-from scrum_master.modules.google_meet.application.interactors.disconnect_from_meet import (
-    DisconnectFromMeetInteractor,
-)
-from scrum_master.modules.google_meet.application.interactors.get_meetings import (
-    GetMeetingsInteractor,
-)
+from scrum_master.modules.google_meet.application.interactors.connect_to_meet import \
+    ConnectToMeetInteractor
+from scrum_master.modules.google_meet.application.interactors.disconnect_from_meet import \
+    DisconnectFromMeetInteractor
+from scrum_master.modules.google_meet.application.interactors.get_meetings import \
+    GetMeetingsInteractor
 from scrum_master.modules.google_meet.application.interfaces import (
-    IGoogleMeetAdapter,
-    IMeetingRepository,
-)
-from scrum_master.modules.google_meet.config import GoogleMeetConfig, GoogleMeetModuleConfig
-from scrum_master.modules.google_meet.infrastructure.repositories.meeting_repository import (
-    MeetingRepository,
-)
-from scrum_master.modules.google_meet.infrastructure.selenium.meet_adapter import (
-    GoogleMeetAdapter,
-)
+    IGoogleMeetAdapter, IMeetingRepository)
+from scrum_master.modules.google_meet.config import (GoogleMeetConfig,
+                                                     GoogleMeetModuleConfig)
+from scrum_master.modules.google_meet.infrastructure.repositories.meeting_repository import \
+    MeetingRepository
+from scrum_master.modules.google_meet.infrastructure.selenium.meet_adapter import \
+    GoogleMeetAdapter
 
 
 class GoogleMeetModuleProvider(Provider):

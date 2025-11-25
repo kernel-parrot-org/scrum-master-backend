@@ -3,13 +3,9 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 
 from scrum_master.modules.google_meet.application.dtos import (
-    DisconnectFromMeetingRequest,
-    MeetingResponse,
-)
+    DisconnectFromMeetingRequest, MeetingResponse)
 from scrum_master.modules.google_meet.application.interfaces import (
-    IGoogleMeetAdapter,
-    IMeetingRepository,
-)
+    IGoogleMeetAdapter, IMeetingRepository)
 from scrum_master.modules.google_meet.domain.entities import MeetingStatus
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
-from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
+from fastapi import (APIRouter, File, HTTPException, Response, UploadFile,
+                     status)
 
 from scrum_master.agents.meet_agent.core.schemas import UploadResponse
 from scrum_master.agents.meet_agent.services.file_service import FileService

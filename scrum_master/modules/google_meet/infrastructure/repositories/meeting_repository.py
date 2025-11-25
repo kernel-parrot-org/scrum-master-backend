@@ -3,7 +3,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scrum_master.modules.google_meet.domain.entities import Meeting, MeetingStatus
+from scrum_master.modules.google_meet.domain.entities import (Meeting,
+                                                              MeetingStatus)
 
 
 class MeetingRepository:

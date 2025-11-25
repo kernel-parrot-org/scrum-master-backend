@@ -1,8 +1,9 @@
-from .prompts import basic_prompt
 from google.adk.agents import Agent
+
 from ..tools.notion_tool import export_to_notion
 from ..tools.telegram_tool import send_failure_report, send_meeting_report
 from ..tools.transcribe_tool import transcribe_audio
+from .prompts import basic_prompt
 
 root_agent = Agent(
     name='meeting_protocol_agent',

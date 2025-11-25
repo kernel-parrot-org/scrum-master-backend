@@ -4,8 +4,10 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scrum_master.modules.auth.application.interfaces import IOAuthConnectionRepository
-from scrum_master.modules.auth.domain.entities import OAuthConnection, OAuthProvider
+from scrum_master.modules.auth.application.interfaces import \
+    IOAuthConnectionRepository
+from scrum_master.modules.auth.domain.entities import (OAuthConnection,
+                                                       OAuthProvider)
 
 
 class SQLAlchemyOAuthConnectionRepository(IOAuthConnectionRepository):

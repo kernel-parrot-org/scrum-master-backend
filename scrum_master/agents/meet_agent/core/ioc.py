@@ -2,7 +2,8 @@ from dishka import Provider, Scope, from_context, provide
 
 from scrum_master.agents.meet_agent.core.config import Settings
 from scrum_master.agents.meet_agent.services.file_service import FileService
-from scrum_master.agents.meet_agent.services.telegram_service import TelegramService
+from scrum_master.agents.meet_agent.services.telegram_service import \
+    TelegramService
 
 
 class AppProvider(Provider):

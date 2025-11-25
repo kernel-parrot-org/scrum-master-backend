@@ -1,13 +1,11 @@
 import logging
-from dishka.integrations.fastapi import inject
+
 from dishka import FromDishka
+from dishka.integrations.fastapi import inject
 from fastapi import APIRouter
 
-from scrum_master.modules.jira.infrastructure.jira.jira_service import JiraService
 from scrum_master.modules.jira.infrastructure.jira.jira_service import (
-    CreateIssueRequest,
-    UpdateIssueRequest
-)
+    CreateIssueRequest, JiraService, UpdateIssueRequest)
 
 router = APIRouter(prefix="/api/v1/jira", tags=["Jira"])
 logger = logging.getLogger(__name__)

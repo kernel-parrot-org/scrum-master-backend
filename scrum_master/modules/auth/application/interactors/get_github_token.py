@@ -1,6 +1,7 @@
 from uuid import UUID
 
-from scrum_master.modules.auth.application.interfaces import IOAuthConnectionRepository
+from scrum_master.modules.auth.application.interfaces import \
+    IOAuthConnectionRepository
 from scrum_master.modules.auth.domain.entities import OAuthProvider
 
 

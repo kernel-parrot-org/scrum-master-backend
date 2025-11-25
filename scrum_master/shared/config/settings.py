@@ -3,12 +3,8 @@ from pathlib import Path
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from scrum_master.shared.config.base import (
-    GCSConfig,
-    JiraConfig,
-    JWTConfig,
-    PostgresConfig, RedisConfig,
-)
+from scrum_master.shared.config.base import (GCSConfig, JiraConfig, JWTConfig,
+                                             PostgresConfig, RedisConfig)
 
 
 class Settings(BaseSettings):

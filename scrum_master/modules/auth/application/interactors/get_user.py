@@ -1,8 +1,10 @@
 from uuid import UUID
 
 from scrum_master.modules.auth.application.dtos import UserResponseOutputDTO
-from scrum_master.modules.auth.application.interfaces import ISessionRepository, IUserRepository
-from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService
+from scrum_master.modules.auth.application.interfaces import (
+    ISessionRepository, IUserRepository)
+from scrum_master.modules.auth.infrastructure.security.jwt_service import \
+    JWTService
 
 
 class GetUserInteractor:

@@ -1,7 +1,8 @@
 import logging
 
 from scrum_master.agents.meet_agent.core.config import settings
-from scrum_master.agents.meet_agent.services.notion_service import NotionService
+from scrum_master.agents.meet_agent.services.notion_service import \
+    NotionService
 
 logger = logging.getLogger(__name__)
 

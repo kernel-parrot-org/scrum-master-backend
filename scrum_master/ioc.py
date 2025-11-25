@@ -4,6 +4,7 @@ from scrum_master.modules.auth.ioc import AuthModuleProvider
 from scrum_master.shared.config import Settings, get_settings
 from scrum_master.shared.ioc import SharedInfrastructureProvider
 
+
 def create_container() -> AsyncContainer:
     settings = get_settings()
 

@@ -1,21 +1,18 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-from scrum_master.modules.auth.application.dtos import LoginResultDTO, OAuthCallbackDTO
+from scrum_master.modules.auth.application.dtos import (LoginResultDTO,
+                                                        OAuthCallbackDTO)
 from scrum_master.modules.auth.application.interfaces import (
-    IOAuthConnectionRepository,
-    ISessionRepository,
-    IUserRepository,
-)
-from scrum_master.modules.auth.domain.entities import (
-    OAuthConnection,
-    OAuthProvider,
-    SessionData,
-    User,
-    UserRole,
-)
-from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import GoogleOAuthProvider
-from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService
+    IOAuthConnectionRepository, ISessionRepository, IUserRepository)
+from scrum_master.modules.auth.domain.entities import (OAuthConnection,
+                                                       OAuthProvider,
+                                                       SessionData, User,
+                                                       UserRole)
+from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import \
+    GoogleOAuthProvider
+from scrum_master.modules.auth.infrastructure.security.jwt_service import \
+    JWTService
 
 
 class GoogleOAuthLoginInteractor:

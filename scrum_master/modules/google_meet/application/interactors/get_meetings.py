@@ -1,7 +1,8 @@
 from uuid import UUID
 
 from scrum_master.modules.google_meet.application.dtos import MeetingResponse
-from scrum_master.modules.google_meet.application.interfaces import IMeetingRepository
+from scrum_master.modules.google_meet.application.interfaces import \
+    IMeetingRepository
 
 
 class GetMeetingsInteractor:

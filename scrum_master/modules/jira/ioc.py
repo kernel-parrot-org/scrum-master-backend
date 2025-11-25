@@ -1,4 +1,5 @@
 from dishka import Provider, Scope, from_context, provide
+
 from scrum_master.modules.jira.api import JiraAPI
 from scrum_master.modules.jira.service import JiraService
 from scrum_master.shared.config import Settings

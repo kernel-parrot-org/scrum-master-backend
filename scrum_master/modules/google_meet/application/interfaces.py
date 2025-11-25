@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from scrum_master.modules.google_meet.domain.entities import Meeting, MeetingStatus
+from scrum_master.modules.google_meet.domain.entities import (Meeting,
+                                                              MeetingStatus)
 
 
 class IMeetingRepository(ABC):
@@ -42,7 +43,15 @@ class IGoogleMeetAdapter(ABC):
         pass
 
     @abstractmethod
-    def connect_to_meeting(self, meet_url: str, bot_name: str | None = None) -> None:
+    def connect_to_meeting(
+        self,
+        meet_url: str,
+        bot_name: str | None = None,
+        min_record_time: int | None = None,
+        max_waiting_time: int | None = None,
+        presigned_url_combined: str | None = None,
+        presigned_url_audio: str | None = None,
+    ) -> None:
         pass
 
     @abstractmethod

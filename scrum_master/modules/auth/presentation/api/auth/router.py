@@ -6,18 +6,28 @@ from uuid import UUID
 import httpx
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import (APIRouter, Cookie, Depends, HTTPException, Request,
+                     Response, status)
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from scrum_master.modules.auth.application.dtos import LogoutDTO, OAuthCallbackDTO, RefreshTokenDTO
-from scrum_master.modules.auth.application.interactors.get_user import GetUserInteractor
-from scrum_master.modules.auth.application.interactors.google_oauth_login import GoogleOAuthLoginInteractor
-from scrum_master.modules.auth.application.interactors.logout import LogoutInteractor
-from scrum_master.modules.auth.application.interactors.refresh_token import RefreshTokenInteractor
-from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import GoogleOAuthProvider
-from scrum_master.modules.auth.infrastructure.security.jwt_service import JWTService
-from scrum_master.modules.auth.presentation.api.auth.schemas import UserResponse
+from scrum_master.modules.auth.application.dtos import (LogoutDTO,
+                                                        OAuthCallbackDTO,
+                                                        RefreshTokenDTO)
+from scrum_master.modules.auth.application.interactors.get_user import \
+    GetUserInteractor
+from scrum_master.modules.auth.application.interactors.google_oauth_login import \
+    GoogleOAuthLoginInteractor
+from scrum_master.modules.auth.application.interactors.logout import \
+    LogoutInteractor
+from scrum_master.modules.auth.application.interactors.refresh_token import \
+    RefreshTokenInteractor
+from scrum_master.modules.auth.infrastructure.oauth.google_oauth_provider import \
+    GoogleOAuthProvider
+from scrum_master.modules.auth.infrastructure.security.jwt_service import \
+    JWTService
+from scrum_master.modules.auth.presentation.api.auth.schemas import \
+    UserResponse
 from scrum_master.shared.config import get_settings
 
 logger = logging.getLogger(__name__)
