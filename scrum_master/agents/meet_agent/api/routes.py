@@ -88,8 +88,7 @@ async def delete_audio(
     )
 
 @router.post('/create-tasks-from-audio')
-async def create_tasks_from_text(request: CreateTasksRequest):
-    # Validate that either text or audio_url is provided
+async def create_tasks_from_audio(request: CreateTasksRequest):
     if not request.text and not request.audio_url:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -105,7 +104,6 @@ async def create_tasks_from_text(request: CreateTasksRequest):
         session_data = create_session_resp.json()
         session_id = session_data['id']
         
-        # Prepare message based on input type
         if request.audio_url:
             message_text = f'Process this audio file and create tasks: {request.audio_url}'
         else:
