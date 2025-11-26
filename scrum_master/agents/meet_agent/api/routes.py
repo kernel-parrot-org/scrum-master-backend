@@ -7,6 +7,11 @@ from fastapi import (APIRouter, File, HTTPException, Response, UploadFile,
                      status)
 from pydantic import BaseModel
 
+from scrum_master.modules.google_meet.infrastructure.bot_status_storage import (
+    BotStatus,
+    get_bot_status_storage,
+)
+
 from scrum_master.agents.meet_agent.core.schemas import UploadResponse
 from scrum_master.agents.meet_agent.core.agent_schemas import (
     TranscribeAndCreateTasksRequest,
@@ -25,6 +30,7 @@ router = APIRouter(
 
 class CreateTasksRequest(BaseModel):
     user_id: str
+    bot_id: str | None = None  # ID бота для обновления статуса
     text: str | None = None
     audio_url: str | None = None
 
@@ -89,42 +95,103 @@ async def delete_audio(
 
 @router.post('/create-tasks-from-audio')
 async def create_tasks_from_audio(request: CreateTasksRequest):
+    """
+    Обрабатывает аудио/текст и создает задачи.
+
+    Обновляет статусы бота:
+    - TRANSCRIBING: начало транскрипции
+    - ANALYZING_MEETING: анализ встречи
+    - CREATING_TASKS: создание задач
+    - DONE: завершение
+    """
+    logger = logging.getLogger(__name__)
+    storage = get_bot_status_storage()
+
     if not request.text and not request.audio_url:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Either text or audio_url must be provided'
         )
-    
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        create_session_resp = await client.post(
-            'http://localhost:8000/apps/meet_agent/users/user/sessions',
-            json={'appName': 'meet_agent', 'userId': request.user_id}
+
+    try:
+        # Обновляем статус: начинаем транскрипцию
+        if request.bot_id:
+            await storage.update_status(request.bot_id, BotStatus.TRANSCRIBING)
+            logger.info(f'Bot {request.bot_id} status: TRANSCRIBING')
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            # Создаем сессию агента
+            create_session_resp = await client.post(
+                'http://localhost:8000/apps/meet_agent/users/user/sessions',
+                json={'appName': 'meet_agent', 'userId': request.user_id}
+            )
+            create_session_resp.raise_for_status()
+            session_data = create_session_resp.json()
+            session_id = session_data['id']
+
+            # Обновляем статус: анализ встречи
+            if request.bot_id:
+                await storage.update_status(
+                    request.bot_id,
+                    BotStatus.ANALYZING_MEETING,
+                    session_id=session_id
+                )
+                logger.info(f'Bot {request.bot_id} status: ANALYZING_MEETING')
+
+            if request.audio_url:
+                message_text = f'Process this audio file and create tasks: {request.audio_url}'
+            else:
+                message_text = request.text
+
+            # Обновляем статус: создание задач
+            if request.bot_id:
+                await storage.update_status(request.bot_id, BotStatus.CREATING_TASKS)
+                logger.info(f'Bot {request.bot_id} status: CREATING_TASKS')
+
+            # Запускаем агента
+            run_resp = await client.post(
+                'http://localhost:8000/run',
+                json={
+                    'appName': 'meet_agent',
+                    'userId': "user",
+                    'sessionId': session_id,
+                    'newMessage': {
+                        'parts': [{'text': message_text}],
+                        'role': 'user'
+                    },
+                    'streaming': False
+                }
+            )
+            run_resp.raise_for_status()
+            result = run_resp.json()
+
+            # Обновляем статус: завершено
+            if request.bot_id:
+                await storage.update_status(
+                    request.bot_id,
+                    BotStatus.DONE,
+                    session_id=session_id,
+                    result_data=result
+                )
+                logger.info(f'Bot {request.bot_id} status: DONE')
+
+            return result
+
+    except Exception as e:
+        logger.error(f'Error processing tasks: {e}', exc_info=True)
+
+        # В случае ошибки устанавливаем статус ERROR
+        if request.bot_id:
+            await storage.update_status(
+                request.bot_id,
+                BotStatus.ERROR,
+                error_message=str(e)
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Failed to process tasks: {str(e)}'
         )
-        create_session_resp.raise_for_status()
-        session_data = create_session_resp.json()
-        session_id = session_data['id']
-        
-        if request.audio_url:
-            message_text = f'Process this audio file and create tasks: {request.audio_url}'
-        else:
-            message_text = request.text
-        
-        run_resp = await client.post(
-            'http://localhost:8000/run',
-            json={
-                'appName': 'meet_agent',
-                'userId': "user",
-                'sessionId': session_id,
-                'newMessage': {
-                    'parts': [{'text': message_text}],
-                    'role': 'user'
-                },
-                'streaming': False
-            }
-        )
-        run_resp.raise_for_status()
-        
-        return run_resp.json()
 
 
 @router.post(

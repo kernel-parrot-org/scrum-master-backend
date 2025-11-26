@@ -17,7 +17,7 @@ root_agent = Agent(
     model='gemini-2.0-flash',
     instruction=basic_prompt,
     tools=[
-        transcribe_audio,
+        # transcribe_audio,
         # send_meeting_report,
         # export_to_notion,
         # send_failure_report,

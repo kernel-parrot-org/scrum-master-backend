@@ -26,6 +26,12 @@ from scrum_master.agents.meet_agent.api.routes import \
 from scrum_master.ioc import create_container
 from scrum_master.modules.auth.presentation.api.auth.router import \
     router as auth_router
+from scrum_master.modules.google_meet.infrastructure.bot_status_storage import (
+    get_bot_status_storage,
+)
+from scrum_master.modules.google_meet.infrastructure.bot_status_sync import (
+    get_bot_status_sync_task,
+)
 from scrum_master.modules.google_meet.presentation.api.meet.router import \
     router as meet_router
 from scrum_master.modules.jira.presentation.api.jira.router import \
@@ -59,6 +65,29 @@ def create_app() -> FastAPI:
     app.include_router(meet_agent_router)
     app.include_router(jira_router)
 
+    # Startup event: запуск фоновых задач
+    @app.on_event('startup')
+    async def startup_event():
+        # Запускаем cleanup task для bot storage
+        storage = get_bot_status_storage()
+        await storage.start_cleanup_task()
+
+        # Запускаем sync task для обновления статусов
+        sync_task = get_bot_status_sync_task(storage)
+        await sync_task.start()
+
+        logging.info('Background tasks started')
+
+    # Shutdown event: остановка фоновых задач
+    @app.on_event('shutdown')
+    async def shutdown_event():
+        storage = get_bot_status_storage()
+        await storage.stop_cleanup_task()
+
+        sync_task = get_bot_status_sync_task(storage)
+        await sync_task.stop()
+
+        logging.info('Background tasks stopped')
 
     return app
 
