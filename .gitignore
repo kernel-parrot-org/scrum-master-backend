@@ -48,3 +48,4 @@ dist/
 /credentials
 .claude
 /.claude
+/data/*

@@ -25,7 +25,8 @@ router = APIRouter(
 
 class CreateTasksRequest(BaseModel):
     user_id: str
-    text: str
+    text: str | None = None
+    audio_url: str | None = None
 
 
 @router.post(
@@ -86,9 +87,14 @@ async def delete_audio(
         }
     )
 
-
-@router.post('/create-tasks-from-text')
-async def create_tasks_from_text(request: CreateTasksRequest):
+@router.post('/create-tasks-from-audio')
+async def create_tasks_from_audio(request: CreateTasksRequest):
+    if not request.text and not request.audio_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Either text or audio_url must be provided'
+        )
+    
     async with httpx.AsyncClient(timeout=120.0) as client:
         create_session_resp = await client.post(
             'http://localhost:8000/apps/meet_agent/users/user/sessions',
@@ -98,14 +104,19 @@ async def create_tasks_from_text(request: CreateTasksRequest):
         session_data = create_session_resp.json()
         session_id = session_data['id']
         
+        if request.audio_url:
+            message_text = f'Process this audio file and create tasks: {request.audio_url}'
+        else:
+            message_text = request.text
+        
         run_resp = await client.post(
             'http://localhost:8000/run',
             json={
                 'appName': 'meet_agent',
-                'userId': request.user_id,
+                'userId': "user",
                 'sessionId': session_id,
                 'newMessage': {
-                    'parts': [{'text': request.text}],
+                    'parts': [{'text': message_text}],
                     'role': 'user'
                 },
                 'streaming': False
