@@ -81,8 +81,9 @@ class FileService:
 
     async def _upload_to_gcs(self, file_path: str) -> str:
         if not self.gcs_bucket:
-            logger.warning("[FileService] GCS not configured, skipping upload")
-            return ""
+            logger.warning("[FileService] GCS not configured, returning local file path")
+            # Return local file path as URI when GCS is not configured
+            return f"file://{os.path.abspath(file_path)}"
 
         try:
             filename = os.path.basename(file_path)

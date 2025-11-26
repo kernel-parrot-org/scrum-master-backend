@@ -28,6 +28,8 @@ from scrum_master.modules.auth.presentation.api.auth.router import \
     router as auth_router
 from scrum_master.modules.google_meet.presentation.api.meet.router import \
     router as meet_router
+from scrum_master.modules.google_meet.presentation.api.meet.bot_router import \
+    router as bot_router
 from scrum_master.modules.jira.presentation.api.jira.router import \
     router as jira_router
 
@@ -56,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
 
     app.include_router(meet_router)
+    app.include_router(bot_router)
     app.include_router(meet_agent_router)
     app.include_router(jira_router)
 
