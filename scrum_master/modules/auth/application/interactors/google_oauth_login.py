@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from scrum_master.modules.auth.application.dtos import (LoginResultDTO,
@@ -31,11 +31,15 @@ class GoogleOAuthLoginInteractor:
         self._google = google_provider
 
     async def __call__(self, dto: OAuthCallbackDTO) -> LoginResultDTO:
-        google_access_token = await self._google.exchange_code(dto.code)
+        token_data = await self._google.exchange_code(dto.code)
+        google_access_token = token_data['access_token']
+        google_refresh_token = token_data.get('refresh_token')
+        expires_in = token_data.get('expires_in', 3600)
+        
         oauth_user_info = await self._google.get_user_info(google_access_token)
         user = await self._user_repo.get_by_email(oauth_user_info.email)
 
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
 
         if not user:
             user = User(
@@ -58,9 +62,9 @@ class GoogleOAuthLoginInteractor:
             provider=OAuthProvider.GOOGLE,
             provider_user_id=oauth_user_info.oauth_id,
             access_token=google_access_token,
-            refresh_token=None,
-            token_expires_at=None,
-            scopes='https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile,openid',
+            refresh_token=google_refresh_token,
+            token_expires_at=now + timedelta(seconds=expires_in) if expires_in else None,
+            scopes=','.join(self._google.scopes),
             created_at=now,
             updated_at=now,
         )

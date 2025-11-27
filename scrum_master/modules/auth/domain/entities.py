@@ -127,3 +127,73 @@ class TokenPair:
             raise ValueError('Tokens cannot be empty')
         if self.expires_in <= 0:
             raise ValueError('expires_in must be positive')
+
+
+class ScheduleType(str, PyEnum):
+    ONCE = 'once'           # One-time scheduled meeting
+    DAILY = 'daily'         # Every day at specific time
+    WEEKLY = 'weekly'       # Specific days of week
+    CALENDAR = 'calendar'   # Synced from Google Calendar
+
+
+class ScheduledMeeting(Base):
+    """Scheduled meetings that bot will auto-join"""
+    __tablename__ = 'scheduled_meetings'
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    
+    # Meeting details
+    meet_url: Mapped[str] = mapped_column(String(512), nullable=False)
+    bot_name: Mapped[str] = mapped_column(String(255), default='Scrum Bot')
+    
+    # Schedule settings
+    schedule_type: Mapped[ScheduleType] = mapped_column(
+        SqlEnum(ScheduleType, values_callable=lambda x: [e.value for e in x]),
+        default=ScheduleType.ONCE,
+        nullable=False,
+    )
+    
+    # For ONCE: specific datetime, For DAILY/WEEKLY: time of day
+    scheduled_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    
+    # For WEEKLY: comma-separated days (0=Mon, 6=Sun), e.g. "0,2,4" for Mon,Wed,Fri
+    days_of_week: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    
+    # For CALENDAR: Google Calendar event ID
+    calendar_event_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    
+    # Status
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+    last_triggered_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    next_trigger_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=datetime.now(),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        Index('ix_scheduled_meetings_next_trigger', 'next_trigger_at', 'is_active'),
+    )

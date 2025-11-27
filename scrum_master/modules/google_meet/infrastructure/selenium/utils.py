@@ -1,9 +1,12 @@
 """Utility functions for Google Meet bot."""
+import logging
 import os
 import re
 import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def clean_meeting_link(url: str) -> str:
@@ -55,7 +58,7 @@ def create_tar_archive(json_file: str, audio_file: str, output_base: str) -> str
 
         return tar_file_path if os.path.exists(tar_file_path) else None
     except Exception as e:
-        print(f"Error creating tar archive: {e}")
+        logger.error(f"Error creating tar archive: {e}")
         return None
 
 

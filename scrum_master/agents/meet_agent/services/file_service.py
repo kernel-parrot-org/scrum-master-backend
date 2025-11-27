@@ -25,7 +25,7 @@ def _preprocess_audio(audio_path: str) -> str:
         audio.export(output_path, format='wav')
         return output_path
     except Exception as e:
-        print(f'[FileService] Audio preprocessing failed: {e}')
+        logger.warning(f'Audio preprocessing failed: {e}')
         return audio_path
 
 

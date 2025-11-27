@@ -23,6 +23,8 @@ class GoogleOAuthProvider(BaseOAuthProvider):
         self.scopes = [
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/calendar',
+            'https://www.googleapis.com/auth/calendar.events',
             'openid',
         ]
 
@@ -66,8 +68,12 @@ class GoogleOAuthProvider(BaseOAuthProvider):
                 raise ValueError(f'Google OAuth error: {error_data}')
 
             data = response.json()
-            logger.info(f'Google token data: {data}')
-            return data['access_token']
+            # Return both access and refresh token
+            return {
+                'access_token': data['access_token'],
+                'refresh_token': data.get('refresh_token'),
+                'expires_in': data.get('expires_in', 3600),
+            }
 
     async def get_user_info(self, access_token: str) -> OAuthUserInfo:
         async with httpx.AsyncClient() as client:
