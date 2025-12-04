@@ -139,7 +139,8 @@ async def create_tasks_from_audio(request: CreateTasksRequest):
                 logger.info(f'Bot {request.bot_id} status: ANALYZING_MEETING')
 
             if request.audio_url:
-                message_text = f'Process this audio file and create tasks: {request.audio_url}'
+                audio_uri = request.audio_url
+                message_text = f'Обработай аудиозапись встречи и создай задачи в Jira.\n\nАудио файл: {audio_uri}\n\nВыполни следующие шаги:\n1. Транскрибируй аудио с помощью transcribe_audio("{audio_uri}")\n2. Проанализируй транскрипцию и определи участников\n3. Извлеки задачи и определи сложность проекта\n4. Собери meeting_data в структурированном формате\n5. Вызови process_meeting_tasks_to_jira(meeting_data) для создания задач в Jira'
             else:
                 message_text = request.text
 

@@ -41,25 +41,32 @@ async def trigger_bot(
         logger.info(f'User {user_id} triggering bot for meeting: {request.meet_url}')
 
         async with httpx.AsyncClient(timeout=30.0) as client:
+            logger.info(f'Bot request: {request.meet_url} {request.bot_name}')
             bot_request = {
                 'meetlink': request.meet_url,
                 'bot_name': request.bot_name,
-                'min_record_time': 120,
+                'min_record_time': 1,
                 'max_waiting_time': 1800,
             }
+
+            logger.info(f'Bot request: {bot_request}')
 
             response = await client.post(
                 'http://host.docker.internal:8001/api/v1/bots/start',
                 json=bot_request
             )
+
+            logger.info(f'!!! Bot response: {response.json()}')
             response.raise_for_status()
             bot_data = response.json()
 
-            logger.info(f'Bot started successfully: {bot_data.get("bot_id")}')
+            logger.info(f'!!! Bot started successfully: {bot_data.get("bot_id")}')
 
             # Сохраняем статус бота в storage
             storage = get_bot_status_storage()
             await storage.create(bot_data['bot_id'], user_id, BotStatus.STARTING)
+
+            logger.info(f'!!! Bot status created: {bot_data["bot_id"]}')
 
             return TriggerBotResponse(
                 bot_id=bot_data['bot_id'],
