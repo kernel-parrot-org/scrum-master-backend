@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from scrum_master.shared.auth.jwt_service import JWTService
 from scrum_master.shared.config import Settings
-from scrum_master.shared.persistence.sqlalchemy.database import new_session_maker
+from scrum_master.shared.persistence.sqlalchemy.database import \
+    new_session_maker
 
 
 class SharedInfrastructureProvider(Provider):

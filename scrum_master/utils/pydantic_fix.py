@@ -1,5 +1,7 @@
 from typing import Any
+
 from pydantic_core import core_schema
+
 
 def matching_adk_pydantic():
     try:

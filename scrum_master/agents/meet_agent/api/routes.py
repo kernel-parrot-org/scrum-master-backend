@@ -1,14 +1,38 @@
+import logging
+import httpx
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
-from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
+from fastapi import (APIRouter, File, HTTPException, Response, UploadFile,
+                     status)
+from pydantic import BaseModel
+
+from scrum_master.modules.google_meet.infrastructure.bot_status_storage import (
+    BotStatus,
+    get_bot_status_storage,
+)
 
 from scrum_master.agents.meet_agent.core.schemas import UploadResponse
+from scrum_master.agents.meet_agent.core.agent_schemas import (
+    TranscribeAndCreateTasksRequest,
+    TranscribeAndCreateTasksResponse,
+    AgentResponse,
+)
 from scrum_master.agents.meet_agent.services.file_service import FileService
+from scrum_master.agents.meet_agent.tools.transcribe_tool import transcribe_audio
+from scrum_master.agents.meet_agent.tools.jira_tool import process_meeting_tasks_to_jira
 
 router = APIRouter(
     prefix='/api/v1',
-    tags=['custom_api'],
+    tags=['meet_agent'],
 )
+
+
+class CreateTasksRequest(BaseModel):
+    user_id: str
+    bot_id: str | None = None  # ID бота для обновления статуса
+    text: str | None = None
+    audio_url: str | None = None
 
 
 @router.post(
@@ -32,7 +56,7 @@ async def upload_audio(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f'Upload failed: {e!s}',
+            detail=f'Upload failed: {str(e)}',
         )
 
 
@@ -68,6 +92,181 @@ async def delete_audio(
             'message': f'Audio file {meeting_id} deleted',
         }
     )
+
+@router.post('/create-tasks-from-audio')
+async def create_tasks_from_audio(request: CreateTasksRequest):
+    """
+    Обрабатывает аудио/текст и создает задачи.
+
+    Обновляет статусы бота:
+    - TRANSCRIBING: начало транскрипции
+    - ANALYZING_MEETING: анализ встречи
+    - CREATING_TASKS: создание задач
+    - DONE: завершение
+    """
+    logger = logging.getLogger(__name__)
+    storage = get_bot_status_storage()
+
+    if not request.text and not request.audio_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Either text or audio_url must be provided'
+        )
+
+    try:
+        # Обновляем статус: начинаем транскрипцию
+        if request.bot_id:
+            await storage.update_status(request.bot_id, BotStatus.TRANSCRIBING)
+            logger.info(f'Bot {request.bot_id} status: TRANSCRIBING')
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            # Создаем сессию агента
+            create_session_resp = await client.post(
+                'http://localhost:8000/apps/meet_agent/users/user/sessions',
+                json={'appName': 'meet_agent', 'userId': request.user_id}
+            )
+            create_session_resp.raise_for_status()
+            session_data = create_session_resp.json()
+            session_id = session_data['id']
+
+            # Обновляем статус: анализ встречи
+            if request.bot_id:
+                await storage.update_status(
+                    request.bot_id,
+                    BotStatus.ANALYZING_MEETING,
+                    session_id=session_id
+                )
+                logger.info(f'Bot {request.bot_id} status: ANALYZING_MEETING')
+
+            if request.audio_url:
+                audio_uri = request.audio_url
+                message_text = f'Обработай аудиозапись встречи и создай задачи в Jira.\n\nАудио файл: {audio_uri}\n\nВыполни следующие шаги:\n1. Транскрибируй аудио с помощью transcribe_audio("{audio_uri}")\n2. Проанализируй транскрипцию и определи участников\n3. Извлеки задачи и определи сложность проекта\n4. Собери meeting_data в структурированном формате\n5. Вызови process_meeting_tasks_to_jira(meeting_data) для создания задач в Jira'
+            else:
+                message_text = request.text
+
+            # Обновляем статус: создание задач
+            if request.bot_id:
+                await storage.update_status(request.bot_id, BotStatus.CREATING_TASKS)
+                logger.info(f'Bot {request.bot_id} status: CREATING_TASKS')
+
+            # Запускаем агента
+            run_resp = await client.post(
+                'http://localhost:8000/run',
+                json={
+                    'appName': 'meet_agent',
+                    'userId': "user",
+                    'sessionId': session_id,
+                    'newMessage': {
+                        'parts': [{'text': message_text}],
+                        'role': 'user'
+                    },
+                    'streaming': False
+                }
+            )
+            run_resp.raise_for_status()
+            result = run_resp.json()
+
+            # Обновляем статус: завершено
+            if request.bot_id:
+                await storage.update_status(
+                    request.bot_id,
+                    BotStatus.DONE,
+                    session_id=session_id,
+                    result_data=result
+                )
+                logger.info(f'Bot {request.bot_id} status: DONE')
+
+            return result
+
+    except Exception as e:
+        logger.error(f'Error processing tasks: {e}', exc_info=True)
+
+        # В случае ошибки устанавливаем статус ERROR
+        if request.bot_id:
+            await storage.update_status(
+                request.bot_id,
+                BotStatus.ERROR,
+                error_message=str(e)
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Failed to process tasks: {str(e)}'
+        )
+
+
+@router.post(
+    '/agent/transcribe-and-create-tasks',
+    response_model=TranscribeAndCreateTasksResponse,
+    summary='Transcribe audio and create Jira tasks with automatic decomposition'
+)
+async def transcribe_and_create_tasks(
+    request: TranscribeAndCreateTasksRequest,
+) -> TranscribeAndCreateTasksResponse:
+    try:
+        logger = logging.getLogger(__name__)
+        logger.info(f"[Endpoint] Starting audio processing for: {request.audio_uri}")
+        
+        logger.info("[Endpoint] Step 1: Transcribing audio...")
+        transcription_result = transcribe_audio(request.audio_uri)
+        
+        if transcription_result.get("status") != "success":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Transcription failed: {transcription_result.get('message')}"
+            )
+        
+        logger.info(f"[Endpoint] Transcription successful")
+        
+        meeting_data = {
+            "meeting_type": "team_meeting",
+            "project_complexity": "simple",
+            "participants": {
+                "active_speakers": [],
+                "mentioned": request.team_members or []
+            },
+            "summary": {
+                "title": "Meeting from audio transcription",
+                "description": "Transcribed and processed audio"
+            },
+            "tasks": [
+                {
+                    "title": "Example task from meeting",
+                    "description": "This is automatically created from the meeting",
+                    "task_type": "task",
+                    "assignee": request.team_members[0] if request.team_members else None,
+                    "priority": "medium",
+                    "deadline": None,
+                    "context": "Created from audio transcription",
+                    "mentioned_by": "System"
+                }
+            ]
+        }
+        
+        logger.info("[Endpoint] Step 2: Processing meeting data to Jira...")
+        
+        jira_result = await process_meeting_tasks_to_jira(meeting_data)
+        
+        logger.info(f"[Endpoint] Jira processing complete: {jira_result.get('status')}")
+        
+        meeting_id = request.audio_uri.split('/')[-1].replace('_processed.wav', '')
+        
+        return TranscribeAndCreateTasksResponse(
+            status="success",
+            message=jira_result.get("message", "Tasks created successfully"),
+            meeting_id=meeting_id,
+            jira_results=jira_result.get("data"),
+            meeting_data=meeting_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Endpoint] Processing failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Processing failed: {str(e)}"
+        )
 
 
 @router.get('/health', summary='Health check')

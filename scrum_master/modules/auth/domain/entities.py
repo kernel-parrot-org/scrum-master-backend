@@ -3,7 +3,9 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, Index, String, UniqueConstraint, func
+from sqlalchemy import DateTime
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 

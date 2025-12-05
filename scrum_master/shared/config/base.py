@@ -2,6 +2,13 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class JiraConfig(BaseSettings):
+    url: str
+    user: str
+    token: str
+    project: str
+
+
 class PostgresConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix='POSTGRES_',
@@ -18,7 +25,10 @@ class PostgresConfig(BaseSettings):
 
     @property
     def url(self) -> str:
-        return f'postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.database}'
+        # Use 'postgres' as host when in Docker (detected by /.dockerenv)
+        import os
+        db_host = 'postgres' if os.path.exists('/.dockerenv') else self.host
+        return f'postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{db_host}:{self.port}/{self.database}'
 
 
 class JWTConfig(BaseSettings):
@@ -58,8 +68,37 @@ class GCSConfig(BaseSettings):
     )
 
     bucket_name: str = ''
-    credentials_path: str = ''
+    application_credentials: str = ''
     project_id: str = ''
+
+class TelegramConfig(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix='TELEGRAM_',
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore',
+    )
+    bot_token: SecretStr = SecretStr('')
+    chat_id: str = '0'
+
+class AudioConfig(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix='AUDIO_',
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore',
+    )
+    max_upload_size: int = 104857600
+    upload_dir: str = 'data/uploads'
+    allowed_extensions: set[str] = {
+        '.mp3',
+        '.wav',
+        '.flac',
+        '.ogg',
+        '.webm',
+        '.m4a',
+        '.mp4',
+    }
 
 class RedisConfig(BaseSettings):
     model_config = SettingsConfigDict(

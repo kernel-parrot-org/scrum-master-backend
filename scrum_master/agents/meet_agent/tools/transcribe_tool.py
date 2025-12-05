@@ -1,15 +1,77 @@
 import logging
+import os
+import uuid
+from pathlib import Path
 
 from google.cloud import speech_v1p1beta1 as speech
+from google.cloud import storage
+from scrum_master.shared.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
+
+
+def _upload_local_file_to_gcs(file_path: str) -> str:
+    """Upload local file to GCS and return GCS URI."""
+    bucket_name = ''
+    
+    # Try to get bucket name from settings first
+    try:
+        settings = get_settings()
+        bucket_name = settings.gcs.bucket_name
+    except Exception as e:
+        logger.warning(f'[TOOL] Failed to get settings: {e}')
+    
+    # Fallback to environment variables
+    if not bucket_name:
+        bucket_name = os.getenv('GCS_BUCKET_NAME') or os.getenv('GOOGLE_GCS_BUCKET_NAME', '')
+    
+    if not bucket_name:
+        raise ValueError('GCS bucket name not configured. Please set GCS_BUCKET_NAME or GOOGLE_GCS_BUCKET_NAME environment variable.')
+    
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        
+        # Generate unique filename
+        filename = f'transcribe_{uuid.uuid4()}_{Path(file_path).name}'
+        blob = bucket.blob(filename)
+        
+        logger.info(f'[TOOL] Uploading local file to GCS: {file_path} -> gs://{bucket_name}/{filename}')
+        blob.upload_from_filename(file_path, content_type='audio/wav')
+        
+        gcs_uri = f'gs://{bucket_name}/{filename}'
+        logger.info(f'[TOOL] File uploaded to GCS: {gcs_uri}')
+        return gcs_uri
+    except Exception as e:
+        logger.error(f'[TOOL] Failed to upload to GCS: {e}')
+        raise
 
 
 def transcribe_audio(gcp_uri: str) -> dict:
     try:
         logger.info(f'Transcribing audio: {gcp_uri}')
 
-        audio = speech.RecognitionAudio(uri=gcp_uri)
+        # Check if it's a local file or GCS URI
+        if gcp_uri.startswith('file://'):
+            # Local file - upload to GCS first (required for long audio)
+            file_path = gcp_uri.replace('file://', '')
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f'Local file not found: {file_path}')
+            
+            logger.info(f'[TOOL] Local file detected, uploading to GCS: {file_path}')
+            gcp_uri = _upload_local_file_to_gcs(file_path)
+            audio = speech.RecognitionAudio(uri=gcp_uri)
+        elif gcp_uri.startswith('gs://'):
+            # GCS URI - use uri parameter
+            audio = speech.RecognitionAudio(uri=gcp_uri)
+        else:
+            # Try to treat as local file path - upload to GCS
+            if os.path.exists(gcp_uri):
+                logger.info(f'[TOOL] Treating as local file path, uploading to GCS: {gcp_uri}')
+                gcp_uri = _upload_local_file_to_gcs(gcp_uri)
+                audio = speech.RecognitionAudio(uri=gcp_uri)
+            else:
+                raise ValueError(f'Invalid audio URI format: {gcp_uri}. Expected gs:// or file:// URI or local file path.')
 
         client = speech.SpeechClient()
 

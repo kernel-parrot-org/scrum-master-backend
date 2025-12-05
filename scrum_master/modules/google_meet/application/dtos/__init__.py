@@ -10,6 +10,10 @@ class ConnectToMeetingRequest:
     user_id: UUID
     meet_url: str
     bot_name: str | None = None
+    min_record_time: int | None = None
+    max_waiting_time: int | None = None
+    presigned_url_combined: str | None = None
+    presigned_url_audio: str | None = None
 
 
 @dataclass(slots=True)
